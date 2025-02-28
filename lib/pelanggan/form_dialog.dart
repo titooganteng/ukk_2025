@@ -1,48 +1,42 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'controller.dart';
 
-class ProdukFormDialog extends StatefulWidget {
-  final ProdukController controller;
-  final Map<String, dynamic>? produk; // null jika ini adalah form tambah baru
+class PelangganFormDialog extends StatefulWidget {
+  final PelangganController controller;
+  final Map<String, dynamic>? pelanggan;
   final Function onSuccess;
   
-  const ProdukFormDialog({
+  const PelangganFormDialog({
     super.key, 
     required this.controller, 
-    this.produk, 
+    this.pelanggan, 
     required this.onSuccess,
   });
 
   @override
-  _ProdukFormDialogState createState() => _ProdukFormDialogState();
+  _PelangganFormDialogState createState() => _PelangganFormDialogState();
 }
 
-class _ProdukFormDialogState extends State<ProdukFormDialog> {
+class _PelangganFormDialogState extends State<PelangganFormDialog> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _namaController;
-  late TextEditingController _hargaController;
-  late TextEditingController _stokController;
+  late TextEditingController _alamatController;
+  late TextEditingController _nomorTeleponController;
   bool _isLoading = false;
   
   @override
   void initState() {
     super.initState();
-    // Inisialisasi controller dengan data produk jika ini form edit
-    _namaController = TextEditingController(text: widget.produk?['namaproduk'] ?? '');
-    _hargaController = TextEditingController(
-      text: widget.produk != null ? widget.produk!['harga'].toString() : '',
-    );
-    _stokController = TextEditingController(
-      text: widget.produk != null ? widget.produk!['stok'].toString() : '',
-    );
+    _namaController = TextEditingController(text: widget.pelanggan?['namapelanggan'] ?? '');
+    _alamatController = TextEditingController(text: widget.pelanggan?['alamat'] ?? '');
+    _nomorTeleponController = TextEditingController(text: widget.pelanggan?['nomortelepon'] ?? '');
   }
   
   @override
   void dispose() {
     _namaController.dispose();
-    _hargaController.dispose();
-    _stokController.dispose();
+    _alamatController.dispose();
+    _nomorTeleponController.dispose();
     super.dispose();
   }
   
@@ -53,20 +47,18 @@ class _ProdukFormDialogState extends State<ProdukFormDialog> {
       });
       
       try {
-        if (widget.produk == null) {
-          // Tambah produk baru
-          await widget.controller.addProduk(
+        if (widget.pelanggan == null) {
+          await widget.controller.addPelanggan(
             _namaController.text,
-            double.parse(_hargaController.text),
-            int.parse(_stokController.text),
+            _alamatController.text,
+            _nomorTeleponController.text,
           );
         } else {
-          // Update produk yang ada
-          await widget.controller.updateProduk(
-            widget.produk!['produkID'],
+          await widget.controller.updatePelanggan(
+            widget.pelanggan!['pelangganID'],
             _namaController.text,
-            double.parse(_hargaController.text),
-            int.parse(_stokController.text),
+            _alamatController.text,
+            _nomorTeleponController.text,
           );
         }
         
@@ -93,7 +85,7 @@ class _ProdukFormDialogState extends State<ProdukFormDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.produk == null ? 'Tambah Produk' : 'Edit Produk'),
+      title: Text(widget.pelanggan == null ? 'Tambah Pelanggan' : 'Edit Pelanggan'),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -103,58 +95,41 @@ class _ProdukFormDialogState extends State<ProdukFormDialog> {
               TextFormField(
                 controller: _namaController,
                 decoration: const InputDecoration(
-                  labelText: 'Nama Produk',
+                  labelText: 'Nama Pelanggan',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Nama produk tidak boleh kosong';
+                    return 'Nama pelanggan tidak boleh kosong';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _hargaController,
+                controller: _alamatController,
                 decoration: const InputDecoration(
-                  labelText: 'Harga',
-                  prefixText: 'Rp ',
+                  labelText: 'Alamat',
                   border: OutlineInputBorder(),
                 ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Harga tidak boleh kosong';
-                  }
-                  if (double.tryParse(value) == null) {
-                    return 'Harga harus berupa angka';
+                    return 'Alamat tidak boleh kosong';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
               TextFormField(
-                controller: _stokController,
+                controller: _nomorTeleponController,
                 decoration: const InputDecoration(
-                  labelText: 'Stok',
+                  labelText: 'Nomor Telepon',
                   border: OutlineInputBorder(),
                 ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
+                keyboardType: TextInputType.phone,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Stok tidak boleh kosong';
-                  }
-                  if (int.tryParse(value) == null) {
-                    return 'Stok harus berupa angka';
-                  }
-                  if (int.parse(value) < 0) {
-                    return 'Stok tidak boleh negatif';
+                    return 'Nomor telepon tidak boleh kosong';
                   }
                   return null;
                 },
@@ -176,7 +151,7 @@ class _ProdukFormDialogState extends State<ProdukFormDialog> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Text(widget.produk == null ? 'Simpan' : 'Update'),
+              : Text(widget.pelanggan == null ? 'Simpan' : 'Update'),
         ),
       ],
     );
